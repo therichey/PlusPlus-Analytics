@@ -10,8 +10,12 @@ class TestCategorizer < MiniTest::Unit::TestCase
     assert_equal 'single-upc', Categorizer.categorize('/search/?q=07358210+')
   end
   
-  def test_unknown_is_returned_for_things_that_cannot_be_categorized
-    assert_equal 'unknown', Categorizer.categorize('/DGJKHGKSDFJHSDFH')
+  def test_unclassified_is_returned_for_things_that_cannot_be_categorized
+    assert_equal 'unclassified', Categorizer.categorize('/DGJKHGKSDFJHSDFH')
+  end
+
+  def test_blank_search_is_returned_for_blank_searches
+    assert_equal 'blank-search', Categorizer.categorize('/search/?q=')
   end
   
   def test_single_tcode_is_returned
@@ -35,7 +39,6 @@ class TestCategorizer < MiniTest::Unit::TestCase
   def test_can_recognize_when_the_path_contains_categories
     assert Categorizer.contains_category?('/search/?q=flowers&category=97114')
     refute Categorizer.contains_category?('/search/?q=flowers')
-
   end
   
   def test_can_recognize_when_the_path_contains_page
@@ -47,7 +50,25 @@ class TestCategorizer < MiniTest::Unit::TestCase
     assert Categorizer.contains_page?('/search/?q=wool mix trousers&page=2&category=98212')
     assert Categorizer.contains_category?('/search/?q=wool mix trousers&page=2&category=98212')
   end
+  
+  def test_multi_code_search_is_returned
+    assert_equal 'multi-code', Categorizer.categorize('/search/?q=05396696+05795635+20553708')
+    assert_equal 'multi-code', Categorizer.categorize('/search/?q=T825634+T038568')
+    assert_equal 'multi-code', Categorizer.categorize('/search/?q=T825634+05795635+20553708')
+  end
+  
+  def test_generic_with_code_is_returned
+    assert_equal 'generic-and-code', Categorizer.categorize('/search/?q=t862681+anti+bobble')
+    assert_equal 'generic-and-code', Categorizer.categorize('/search/?q=T743631B+black+trousers+T743631B')
+    assert_equal 'generic-and-code', Categorizer.categorize('/search/?q=05396696+black+trousers+T743631B')
+    assert_equal 'generic-and-code', Categorizer.categorize('/search/?q=05396696+black+trousers+05396696+05795635+20553708')
+  end
+  
+  def test_can_handle_pound_sign
+    assert_equal 'generic-search', Categorizer.categorize('/search/?q=orchid+£15')
+  end
 end
+
 
 
 
