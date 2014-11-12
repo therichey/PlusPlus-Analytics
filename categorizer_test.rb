@@ -33,7 +33,27 @@ class TestCategorizer < MiniTest::Unit::TestCase
   end
   
   def test_customer_search_is_returned
-    assert_equal 'customer-search', Categorizer.categorize('/customer-search?search_type=phoneNumber')
+    assert_equal 'customer-search', Categorizer.categorize('/customer-search?search_type=blarrgh')
+  end
+  
+  def test_customer_search_phone_number
+    assert_equal 'phone-number', Categorizer.categorize('/customer-search?search_type=phoneNumber')
+  end
+  
+  def test_customer_search_email
+    assert_equal 'email', Categorizer.categorize('/customer-search?search_type=email')
+  end
+  
+  def test_customer_search_first_last_name
+    assert_equal 'firstname-lastname', Categorizer.categorize('/customer-search?search_type=firstName_lastName')
+  end
+  
+  def test_lastname_postcode
+    assert_equal 'lastname-postcode', Categorizer.categorize('/customer-search?search_type=lastName_postcode')
+  end  
+  
+  def test_can_recognize_order_number
+    assert_equal 'ordernumber', Categorizer.categorize('/customer-search?search_type=orderNumber')
   end
   
   def test_can_recognize_when_the_path_contains_categories
@@ -67,6 +87,7 @@ class TestCategorizer < MiniTest::Unit::TestCase
   def test_can_handle_pound_sign
     assert_equal 'generic-search', Categorizer.categorize('/search/?q=orchid+£15')
   end
+
 end
 
 

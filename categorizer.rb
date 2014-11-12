@@ -4,6 +4,7 @@ require 'cgi'
 class Categorizer
   
   def self.categorize(path)
+    # Define the product categories
     if path.start_with?('/search/?q=')
       terms = get_terms_from_path(path)
       
@@ -20,9 +21,21 @@ class Categorizer
       else 
         'generic-and-code'
       end
-      
+    # Define the customer search categories  
     elsif path.start_with?('/customer-search?search_type=') 
-      'customer-search' 
+      if path.include? "search_type=phoneNumber"
+        'phone-number'
+      elsif path.include? "search_type=email"
+        'email'
+      elsif path.include? "search_type=firstName_lastName"
+        'firstname-lastname'
+      elsif path.include? "search_type=lastName_postcode"
+        'lastname-postcode'
+      elsif path.include? "search_type=orderNumber"
+        'ordernumber'
+      else
+        'customer-search'
+      end
     else
       'unclassified'
     end
@@ -37,16 +50,16 @@ class Categorizer
   end
   
   def self.contains_category?(path)
-    params = parse_params(path)
+    params = parse_product_search_params(path)
     params.has_key?("category")
   end
   
   def self.contains_page?(path)
-    params = parse_params(path)
+    params = parse_product_search_params(path)
     params.has_key?("page")
   end
 
-  def self.parse_params(path)
+  def self.parse_product_search_params(path)
     path = path.gsub(' ','+')
     query = path.gsub('/search/?','')
     CGI.parse(query)
@@ -56,7 +69,7 @@ class Categorizer
   end
   
   def self.get_terms_from_path(path)
-    params = parse_params(path)
+    params = parse_product_search_params(path)
     q = params['q'].first
     q.gsub('+',' ').strip.split
   end
