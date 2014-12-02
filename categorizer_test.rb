@@ -32,6 +32,10 @@ class TestCategorizer < MiniTest::Unit::TestCase
     assert_equal 'generic-search', Categorizer.categorize('/search/?q= bouquets')
   end
   
+  def test_pcode_is_returned
+    assert_equal 'single-pcode', Categorizer.categorize('/search/?q=p22320758')
+  end
+
   def test_customer_search_is_returned
     assert_equal 'customer-search', Categorizer.categorize('/customer-search?search_type=blarrgh')
   end
@@ -46,14 +50,32 @@ class TestCategorizer < MiniTest::Unit::TestCase
   
   def test_customer_search_first_last_name
     assert_equal 'firstname-lastname', Categorizer.categorize('/customer-search?search_type=firstName_lastName')
+    assert_equal 'firstname-lastname', Categorizer.categorize('/customer-search?search_type=first-name,last-name')
   end
   
   def test_lastname_postcode
     assert_equal 'lastname-postcode', Categorizer.categorize('/customer-search?search_type=lastName_postcode')
+    assert_equal 'lastname-postcode', Categorizer.categorize('/customer-search?search_type=last-name,postcode')
   end  
   
+  def test_first_last_postcode
+    assert_equal 'first-last-postcode', Categorizer.categorize( '/customer-search?search_type=first-name,last-name,postcode')
+  end
+  
+  def test_postcode_only
+    assert_equal 'postcode', Categorizer.categorize('/customer-search?search_type=postcode')
+  end
+  
+  def test_lastname_only
+    assert_equal 'lastname', Categorizer.categorize('/customer-search?search_type=last-name')
+  end
+
   def test_can_recognize_order_number
     assert_equal 'ordernumber', Categorizer.categorize('/customer-search?search_type=orderNumber')
+  end
+  
+  def test_successful_customer_search_is_returned
+    assert_equal 'enacted-customer', Categorizer.categorize('/search/')
   end
   
   def test_can_recognize_when_the_path_contains_categories
@@ -69,6 +91,20 @@ class TestCategorizer < MiniTest::Unit::TestCase
   def test_can_recognize_when_the_path_contains_category_and_page
     assert Categorizer.contains_page?('/search/?q=wool mix trousers&page=2&category=98212')
     assert Categorizer.contains_category?('/search/?q=wool mix trousers&page=2&category=98212')
+  end
+  
+  def test_can_recognize_when_path_contains_filter
+    assert Categorizer.contains_price_filter?('/search/?q=blue+trousers&price_filter_min=20&price_filter_max=20')
+    assert Categorizer.contains_price_filter?('/search/?q=red+shirt&price_filter_min=2&price_filter_max=')
+    assert Categorizer.contains_price_filter?('/search/?q=black+trousers&price_filter_min=&price_filter_max=300')
+  end
+  
+  def test_can_recognize_the_min_price
+    assert_equal '20', Categorizer.min_price_filtering('/search/?q=blue+trousers&price_filter_min=20&price_filter_max=20')
+  end
+  
+  def test_can_recognize_the_max_price
+    assert_equal '300', Categorizer.max_price_filtering('/search/?q=black+trousers&price_filter_min=&price_filter_max=300')
   end
   
   def test_multi_code_search_is_returned
@@ -87,7 +123,7 @@ class TestCategorizer < MiniTest::Unit::TestCase
   def test_can_handle_pound_sign
     assert_equal 'generic-search', Categorizer.categorize('/search/?q=orchid+£15')
   end
-
+  
 end
 
 
